@@ -1,0 +1,893 @@
+{
+	"info": {
+		"_postman_id": "be850098-b8c1-4535-88c8-7365f8948018",
+		"name": "[rsoi][lab5] Flight Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "976707"
+	},
+	"item": [
+		{
+			"name": "Gateway API",
+			"item": [
+				{
+					"name": "[auth] Get Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Получить токен\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.access_token).not.be.empty",
+									"    pm.collectionVariables.set(\"authorizationToken\", response.access_token)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "scope",
+									"value": "openid",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "text"
+								},
+								{
+									"key": "clientId",
+									"value": "{{clientId}}",
+									"type": "text"
+								},
+								{
+									"key": "clientSecret",
+									"value": "{{clientSecret}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{identityProviderUrl}}/oauth/token",
+							"host": [
+								"{{identityProviderUrl}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Получить список рейов",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Получить список рейсов\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/flights?page=1&size=10",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"flights"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Получить список рейстов",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Получить список рейсов\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const flightNumber = pm.collectionVariables.get(\"flightNumber\")",
+									"    const response = pm.response.json();",
+									"",
+									"    const pageSize = Number(pm.request.url.query.get(\"size\"))",
+									"    pm.expect(response.items).to.be.an(\"array\")",
+									"    pm.expect(response.page).to.be.not.undefined",
+									"    pm.expect(response.pageSize).to.be.lte(pageSize)",
+									"    pm.expect(response.totalElements).to.be.not.undefined",
+									"",
+									"    const flight = _.find(response.items, { \"flightNumber\": flightNumber })",
+									"    pm.expect(flight).to.be.not.undefined",
+									"    pm.expect(flight.flightNumber).to.eq(flightNumber)",
+									"    pm.expect(flight.fromAirport).to.eq(\"Санкт-Петербург Пулково\")",
+									"    pm.expect(flight.toAirport).to.eq(\"Москва Шереметьево\")",
+									"    pm.expect(flight.date).to.not.empty",
+									"    pm.expect(flight.price).to.eq(1500)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/flights?page=1&size=10",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"flights"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Получить информацию о состоянии бонусного счета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Получить информацию о состоянии бонусного счета\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/privilege",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"privilege"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Получить информацию о состоянии бонусного счета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Получить информацию о состоянии бонусного счета\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const response = pm.response.json();",
+									"",
+									"    pm.expect(response.balance).to.be.not.undefined",
+									"    pm.expect(response.status).to.be.not.undefined",
+									"    pm.collectionVariables.set(\"balance\", response.balance)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/privilege",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"privilege"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Покупка билета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Купить билет\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flightNumber\": \"{{flightNumber}}\",\n    \"price\": 1500,\n    \"paidFromBalance\": false\n}"
+						},
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Покупка билета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Купить билет\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const flightNumber = pm.collectionVariables.get(\"flightNumber\")",
+									"    const response = pm.response.json();",
+									"",
+									"    pm.expect(response).to.be.not.undefined",
+									"    pm.expect(response.ticketUid).to.be.not.empty",
+									"    pm.expect(response.flightNumber).to.eq(flightNumber)",
+									"    pm.expect(response.fromAirport).to.eq(\"Санкт-Петербург Пулково\")",
+									"    pm.expect(response.toAirport).to.eq(\"Москва Шереметьево\")",
+									"    pm.expect(response.date).to.not.empty",
+									"    pm.expect(response.price).to.eq(1500)",
+									"    pm.expect(response.paidByMoney).to.eq(1500)",
+									"    pm.expect(response.paidByBonuses).to.eq(0)",
+									"    pm.expect(response.status).to.eq(\"PAID\")",
+									"    pm.expect(response.privilege.balance).to.gte(150)",
+									"    pm.expect(response.privilege.status).to.be.not.empty",
+									"    ",
+									"    pm.collectionVariables.set(\"ticketUid\", response.ticketUid)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"flightNumber\": \"{{flightNumber}}\",\n    \"price\": 1500,\n    \"paidFromBalance\": false\n}"
+						},
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Информация по конкретному билету",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация по конкретному билету\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets/:ticketUid",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								":ticketUid"
+							],
+							"variable": [
+								{
+									"key": "ticketUid",
+									"value": "{{ticketUid}}",
+									"description": "UUID билета"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Информация по конкретному билету",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация по конкретному билету\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const flightNumber = pm.collectionVariables.get(\"flightNumber\")",
+									"    const ticketUid = pm.collectionVariables.get(\"ticketUid\")",
+									"    ",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.not.undefined",
+									"    pm.expect(response.ticketUid).to.be.eq(ticketUid)",
+									"    pm.expect(response.flightNumber).to.eq(flightNumber)",
+									"    pm.expect(response.fromAirport).to.eq(\"Санкт-Петербург Пулково\")",
+									"    pm.expect(response.toAirport).to.eq(\"Москва Шереметьево\")",
+									"    pm.expect(response.date).to.not.empty",
+									"    pm.expect(response.price).to.eq(1500)",
+									"    pm.expect(response.status).to.eq(\"PAID\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets/:ticketUid",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								":ticketUid"
+							],
+							"variable": [
+								{
+									"key": "ticketUid",
+									"value": "{{ticketUid}}",
+									"description": "UUID билета"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Информация по всем билетам пользователя",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация по всем билетам\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Информация по всем билетам пользователя",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация по всем билетам\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const flightNumber = pm.collectionVariables.get(\"flightNumber\")",
+									"    const ticketUid = pm.collectionVariables.get(\"ticketUid\")",
+									"    ",
+									"    const response = pm.response.json();",
+									"    pm.expect(response).to.be.an(\"array\")",
+									"",
+									"    const ticket = _.find(response, { \"ticketUid\": ticketUid })",
+									"    pm.expect(ticket).to.be.not.undefined",
+									"    pm.expect(ticket.ticketUid).to.be.eq(ticketUid)",
+									"    pm.expect(ticket.flightNumber).to.eq(flightNumber)",
+									"    pm.expect(ticket.fromAirport).to.eq(\"Санкт-Петербург Пулково\")",
+									"    pm.expect(ticket.toAirport).to.eq(\"Москва Шереметьево\")",
+									"    pm.expect(ticket.date).to.not.empty",
+									"    pm.expect(ticket.price).to.eq(1500)",
+									"    pm.expect(ticket.status).to.eq(\"PAID\")",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Информация о пользователе",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация о пользователе\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/me",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Информация о пользователе",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация о пользователе\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const flightNumber = pm.collectionVariables.get(\"flightNumber\")",
+									"    const ticketUid = pm.collectionVariables.get(\"ticketUid\")",
+									"    const balance = pm.collectionVariables.get(\"balance\")",
+									"",
+									"    const response = pm.response.json();",
+									"    const ticket = _.find(response.tickets, { \"ticketUid\": ticketUid })",
+									"",
+									"    pm.expect(ticket).to.be.not.undefined",
+									"    pm.expect(ticket.ticketUid).to.be.eq(ticketUid)",
+									"    pm.expect(ticket.flightNumber).to.be.eq(flightNumber)",
+									"    pm.expect(ticket.fromAirport).to.eq(\"Санкт-Петербург Пулково\")",
+									"    pm.expect(ticket.toAirport).to.eq(\"Москва Шереметьево\")",
+									"    pm.expect(ticket.date).to.not.empty",
+									"    pm.expect(ticket.price).to.be.eq(1500)",
+									"    pm.expect(ticket.status).to.be.eq(\"PAID\")",
+									"    ",
+									"    pm.expect(response.privilege).to.be.not.undefined",
+									"    pm.expect(response.privilege.balance).to.be.eq(balance + 150)",
+									"    pm.expect(response.privilege.status).to.be.not.empty",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/me",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Получить информацию о состоянии бонусного счета после покупки билета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Информация о состоянии бонусного счета\", () => {",
+									"    pm.response.to.have.status(200)",
+									"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.contains(\"application/json\");",
+									"",
+									"    const ticketUid = pm.collectionVariables.get(\"ticketUid\")",
+									"    const balance = pm.collectionVariables.get(\"balance\")",
+									"",
+									"    const response = pm.response.json();",
+									"    const ticket = _.find(response.history, { \"ticketUid\": ticketUid })",
+									"    pm.expect(ticket).to.be.not.undefined",
+									"",
+									"    pm.expect(response.balance).to.be.eq(balance + 150)",
+									"    pm.expect(response.status).to.be.not.undefined",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/privilege",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"privilege"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[unauthorize] Возврат билета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Билет успешно возвращен\", () => {",
+									"    pm.response.to.have.status(401)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets/:ticketUid",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								":ticketUid"
+							],
+							"variable": [
+								{
+									"key": "ticketUid",
+									"value": "{{ticketUid}}",
+									"description": "UUID билета"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "[success] Возврат билета",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Билет успешно возвращен\", () => {",
+									"    pm.response.to.have.status(204)",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authorizationToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{serviceUrl}}/api/v1/tickets/:ticketUid",
+							"host": [
+								"{{serviceUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tickets",
+								":ticketUid"
+							],
+							"variable": [
+								{
+									"key": "ticketUid",
+									"value": "{{ticketUid}}",
+									"description": "UUID билета"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "noauth"
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.collectionVariables.set(\"flightNumber\", \"AFL031\")"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "serviceUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "flightNumber",
+			"value": ""
+		},
+		{
+			"key": "ticketUid",
+			"value": ""
+		},
+		{
+			"key": "balance",
+			"value": ""
+		},
+		{
+			"key": "authorizationToken",
+			"value": ""
+		}
+	]
+}
