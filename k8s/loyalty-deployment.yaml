@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loyalty-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loyalty
+  template:
+    metadata:
+      labels:
+        app: loyalty
+    spec:
+      containers:
+      - name: loyalty-service
+        image: tonynm/loyalty_service
+        ports:
+        - containerPort: 8050
+        env:
+        - name: DATABASE_URL
+          value: "postgres://program:test@postgres:5432/loyalties"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loyalty-service
+  namespace: default
+spec:
+  selector:
+    app: loyalty
+  ports:
+  - protocol: TCP
+    port: 8050
+    targetPort: 8050
+  type: ClusterIP

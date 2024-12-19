@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reservation-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reservation
+  template:
+    metadata:
+      labels:
+        app: reservation
+    spec:
+      containers:
+      - name: reservation-service
+        image: tonynm/reservation_service
+        ports:
+        - containerPort: 8070
+        env:
+        - name: DATABASE_URL
+          value: "postgres://program:test@postgres:5432/reservations"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: reservation-service
+  namespace: default
+spec:
+  selector:
+    app: reservation
+  ports:
+  - protocol: TCP
+    port: 8070
+    targetPort: 8070
+  type: ClusterIP

@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: library/postgres:13
+    container_name: postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: postgres
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+      - ./postgres/:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+  
+  loyalty_service:
+    build:
+      context: ./LoyaltyService
+      dockerfile: Dockerfile
+    container_name: LoyaltyService
+    restart: on-failure
+    image: tonynm/loyalty_service
+    depends_on:
+      - postgres
+    ports:
+      - "8050:8050"
+
+  payment_service:
+    build:
+      context: ./PaymentService
+      dockerfile: Dockerfile
+    container_name: PaymentService
+    restart: on-failure
+    depends_on:
+      - postgres
+    image: tonynm/payment_service
+    ports:
+      - "8060:8060"
+
+  reservation_service:
+    build:
+      context: ./ReservationService
+      dockerfile: Dockerfile
+    container_name: ReservationService
+    restart: on-failure
+    depends_on:
+      - postgres
+    image: tonynm/reservation_service
+    ports:
+      - "8070:8070"
+
+  gateway_service:
+    build:
+      context: ./GatewayService
+      dockerfile: Dockerfile
+    container_name: GatewayService
+    restart: on-failure
+    depends_on:
+      - postgres
+      - reservation_service
+      - payment_service
+      - loyalty_service
+    image: tonynm/gateway_service
+    ports:
+      - "8080:8080"

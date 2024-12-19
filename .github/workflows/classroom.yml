@@ -4,7 +4,7 @@ on:
     branches: [ master ]
 jobs:
   build:
-    name: Autograding
+    name: Build and push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -13,26 +13,80 @@ jobs:
 
       - uses: docker/setup-buildx-action@v2
 
-      # TODO build, publish to docker hub, deploy to k8s
+      - name: Build images
+        timeout-minutes: 10
+        run: docker compose build
 
-      - name: Run API Tests
-        uses: matt-ball/newman-action@master
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          collection: <variant>/postman/collection.json
-          environment: <variant>/postman/environment.json
-          delayRequest: 100
-          reporters: '[ "cli" ]'
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - uses: education/autograding@v1
-        id: autograder
-        continue-on-error: true
+      - name: Push images
+        run: |
+          docker compose push
+  
+  deploy:
+    name: Deploy to Kubernetes
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - name: Github auto grader mark
-        uses: Romanow/google-sheet-autograder-marker@v1.0
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v1
         with:
-          google_token: ${{secrets.GOOGLE_API_KEY}}
-          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-          homework_number: 5
-          user_column: 'D'
-          column_offset: 'F'
-          mark: "'+"
+          version: 'latest'
+
+      - name: Configure Kubernetes context
+        run: |
+          echo "${{ secrets.KUBE_CA_CERT }}" > ca.crt
+          kubectl config set-cluster yc-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt --embed-certs=true
+          kubectl config set-credentials yc-user --token=${{ secrets.KUBE_TOKEN }}
+          kubectl config set-context yc-context --cluster=yc-cluster --user=yc-user
+          kubectl config use-context yc-context
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/
+
+      - name: Restart Deployments
+        run: |
+          kubectl rollout restart deployment/gateway-service
+          kubectl rollout restart deployment/loyalty-service
+          kubectl rollout restart deployment/payment-service
+          kubectl rollout restart deployment/reservation-service
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods
+          kubectl get services
+          kubectl get pods -n ingress-nginx
+          kubectl get svc -n ingress-nginx
+          
+  test:
+    name: Test
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Wait 10s
+      id: delay
+      run: sleep 10s  
+
+    - name: Run API Tests
+      uses: matt-ball/newman-action@master
+      with:
+        collection: v2/postman/collection.json
+        environment: v2/postman/environment.json
+        delayRequest: 100
+        reporters: '[ "cli" ]'
+
+    - uses: education/autograding@v1
+      id: autograder
+      continue-on-error: true
