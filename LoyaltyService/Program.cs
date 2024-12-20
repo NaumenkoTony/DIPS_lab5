@@ -1,11 +1,21 @@
 using LoyaltyService.Data;
 using LoyaltyService.Data.RepositoriesPostgreSQL;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.AddSerilog();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
 
 builder.Services.AddDbContext<LoyaltiesContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("LoyaltyService")));
@@ -17,46 +27,79 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.Authority = $"https://{builder.Configuration.GetSection("Auth0:Domain")}/";
-        options.Audience = builder.Configuration.GetSection("Auth0:Audience").ToString();
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true
-        };
 
-        options.ConfigurationManager = new Microsoft.IdentityModel.Protocols.ConfigurationManager<OpenIdConnectConfiguration>(
-            $"https://{builder.Configuration["Auth0:Domain"]}/.well-known/openid-configuration",
-            new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfigurationRetriever());
-    });
+builder.Services.AddMvc();
+builder.Services.AddAutoMapper(typeof(Program));
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.Authority = "https://dev-qsbo6smqgu2rkhti.us.auth0.com/";  
+    options.Audience = "https://dips5.com/api";  
+
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "https://dev-qsbo6smqgu2rkhti.us.auth0.com/",
+        ValidAudience = "https://dips5.com/api"
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogError("Authentication failed: " + context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("Authentication challenge triggered: {Error}, {ErrorDescription}", context.Error, context.ErrorDescription);
+            return Task.CompletedTask;
+        }
+    };
+});
+
+
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<LoyaltiesContext>();
-    
-    try
-    {
-        dbContext.Database.OpenConnection();
-        dbContext.Database.CloseConnection();
-        Console.WriteLine("Connected to database");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error connecting to database: {ex.Message}");
-        Environment.Exit(1);
-    }
-}
-
-app.MapControllers();
+app.UseRouting();  // Убедитесь, что используете Endpoint Routing
 
 app.UseAuthentication(); 
 app.UseAuthorization();
+
+app.MapControllers();  // Это будет обрабатывать все маршруты для API
+
+app.UseStaticFiles();
+
+// Убираем UseMvc и добавляем UseEndpoints
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();  // Маппинг контроллеров через Endpoint Routing
+});
+
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during authentication.");
+        throw;
+    }
+});
 
 app.Run();
