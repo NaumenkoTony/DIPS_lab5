@@ -47,6 +47,31 @@ jobs:
         run: |
           kubectl apply -f k8s/
 
+      - name: Configure Ingress with Static IP
+        run: |
+          echo '
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: gateway-ingress
+            namespace: default
+            annotations:
+              nginx.ingress.kubernetes.io/rewrite-target: /
+              nginx.ingress.kubernetes.io/static-ip: "192.168.49.100"
+          spec:
+            ingressClassName: nginx
+            rules:
+            - http:
+                paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: gateway-service
+                      port:
+                        number: 8080
+          ' | kubectl apply -f -
+
       - name: Restart Deployments
         run: |
           kubectl rollout restart deployment/gateway-service
