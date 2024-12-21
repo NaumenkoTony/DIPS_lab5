@@ -90,7 +90,7 @@ jobs:
       uses: matt-ball/newman-action@master
       with:
         collection: v2/postman/collection.json
-        environment: v2/postman/environment.json
+        environment: v2/postman/updated_environment.json
         delayRequest: 100
         reporters: '[ "cli" ]'
 
