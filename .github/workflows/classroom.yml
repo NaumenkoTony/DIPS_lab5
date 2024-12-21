@@ -28,25 +28,20 @@ jobs:
           docker compose push
   
   deploy:
-    name: Deploy to Kubernetes
+    name: Deploy to Minikube
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v1
-        with:
-          version: 'latest'
-
-      - name: Configure Kubernetes context
+      - name: Set up Minikube
         run: |
-          echo "${{ secrets.KUBE_CA_CERT }}" > ca.crt
-          kubectl config set-cluster yc-cluster --server=${{ secrets.KUBE_SERVER }} --certificate-authority=ca.crt --embed-certs=true
-          kubectl config set-credentials yc-user --token=${{ secrets.KUBE_TOKEN }}
-          kubectl config set-context yc-context --cluster=yc-cluster --user=yc-user
-          kubectl config use-context yc-context
+          curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          chmod +x minikube
+          sudo mv minikube /usr/local/bin/
+          minikube start --driver=docker
+          kubectl cluster-info
 
       - name: Apply Kubernetes manifests
         run: |
@@ -58,13 +53,11 @@ jobs:
           kubectl rollout restart deployment/loyalty-service
           kubectl rollout restart deployment/payment-service
           kubectl rollout restart deployment/reservation-service
-
+  
       - name: Verify deployment
         run: |
           kubectl get pods
           kubectl get services
-          kubectl get pods -n ingress-nginx
-          kubectl get svc -n ingress-nginx
           
   test:
     name: Test
