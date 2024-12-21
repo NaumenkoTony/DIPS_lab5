@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "serviceUrl",
-      "value": "http://192.168.49.100",
+      "value": "http://51.250.32.102",
       "enabled": true
     },
     {
