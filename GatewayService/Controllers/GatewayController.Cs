@@ -11,13 +11,16 @@ using GatewayService.Models.ReservationServiceDto;
 using GatewayService.Models.LoyaltyServiceDto;
 using GatewayService.Models.PaymentServiceDto;
 using Microsoft.AspNetCore.Authorization;
+using System.Net.Http.Headers;
 
 [Authorize]
-public class GatewayController(IHttpClientFactory httpClientFactory, IMapper mapper, ILogger<GatewayController> logger) : ControllerBase
+public class GatewayController(IHttpClientFactory httpClientFactory, IMapper mapper, ILogger<GatewayController> logger, 
+ITokenService tokenService) : ControllerBase
 {
     private readonly IHttpClientFactory httpClientFactory = httpClientFactory;
     private readonly IMapper mapper = mapper;
     private readonly ILogger<GatewayController> logger = logger;
+    private readonly ITokenService tokenService = tokenService;
 
     private async Task<ReservationResponse> CreateReservationResponseAsync(ReservationServiceResponse reservationServiceResponse)
     {
@@ -83,12 +86,11 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
     [Route("/api/v1/me")]
     [HttpGet]
-    public async Task<ActionResult<UserInfoResponse>> GetInfoAsync([FromHeader(Name = "X-User-Name")] string username)
+    public async Task<ActionResult<UserInfoResponse>> GetInfoAsync()
     {
         var reservationService = httpClientFactory.CreateClient("ReservationService");
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/reservations");
-        request.Headers.Add("X-User-Name", username);
         var reservationsResponse = await reservationService.SendAsync(request);
         if (!reservationsResponse.IsSuccessStatusCode)
         {
@@ -110,7 +112,6 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
         
         var loyaltyService = httpClientFactory.CreateClient("LoyaltyService");
         request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/loyalties");
-        request.Headers.Add("X-User-Name", username);
         var loyaltiesResponse = await loyaltyService.SendAsync(request);
         if (!loyaltiesResponse.IsSuccessStatusCode)
         {
@@ -135,11 +136,10 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
     [Route("api/v1/loyalty")]
     [HttpGet]
-    public async Task<ActionResult<LoyaltyInfoResponse>> GetLoyalty([FromHeader(Name = "X-User-Name")] string username)
+    public async Task<ActionResult<LoyaltyInfoResponse>> GetLoyalty()
     {
         var loyaltyService = httpClientFactory.CreateClient("LoyaltyService");
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/loyalties");
-        request.Headers.Add("X-User-Name", username);
         var loyaltyResponse = await loyaltyService.SendAsync(request);
         if (!loyaltyResponse.IsSuccessStatusCode)
         {
@@ -157,7 +157,7 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
     [Route("api/v1/reservations")]
     [HttpPost]
-    public async Task<ActionResult<LoyaltyInfoResponse>> BookHotel([FromHeader(Name = "X-User-Name")] string username, [FromBody] CreateReservationRequest createReservationRequest)
+    public async Task<ActionResult<LoyaltyInfoResponse>> BookHotel([FromBody] CreateReservationRequest createReservationRequest)
     {
          if (!ModelState.IsValid)
         {
@@ -184,7 +184,6 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
         var loyaltyService = httpClientFactory.CreateClient("LoyaltyService");
         
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/loyalties");
-        request.Headers.Add("X-User-Name", username);
         var loyaltyResponse = await loyaltyService.SendAsync(request);
         if (!loyaltyResponse.IsSuccessStatusCode)
         {
@@ -220,7 +219,8 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
         {
             return NotFound($"Payment was not created");
         }
-
+        
+        string username = tokenService.GetUsernameFromJWT();
         var reservationRequest = new ReservationServiceRequest
         {
             Username = username,
@@ -247,7 +247,6 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
         var loyaltyClient = httpClientFactory.CreateClient("LoyaltyService");
         request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/loyalties/improve");
-        request.Headers.Add("X-User-Name", username);
         loyaltyResponse = await loyaltyService.SendAsync(request);
 
         var createReservationResponse = new CreateReservationResponse
@@ -267,11 +266,10 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
     
     [Route("api/v1/reservations/{reservationUid}")]
     [HttpGet]
-    public async Task<ActionResult<ReservationResponse>> GetReservationByUsername([FromHeader(Name = "X-User-Name")] string username, string reservationUid)
+    public async Task<ActionResult<ReservationResponse>> GetReservationByUsername(string reservationUid)
     {
         var reservationService = httpClientFactory.CreateClient("ReservationService");
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/reservations/{reservationUid}");
-        request.Headers.Add("X-User-Name", username);
         var reservationServiceResponse = await reservationService.SendAsync(request);
         if (!reservationServiceResponse.IsSuccessStatusCode)
         {
@@ -291,11 +289,10 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
     [Route("api/v1/reservations")]
     [HttpGet]
-    public async Task<ActionResult<ReservationResponse>> GetReservationsByUsername([FromHeader(Name = "X-User-Name")] string username)
+    public async Task<ActionResult<ReservationResponse>> GetReservationsByUsername()
     {
         var reservationService = httpClientFactory.CreateClient("ReservationService");
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/reservations");
-        request.Headers.Add("X-User-Name", username);
         var reservationsResponse = await reservationService.SendAsync(request);
         if (!reservationsResponse.IsSuccessStatusCode)
         {
@@ -320,11 +317,10 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
     [Route("api/v1/reservations/{reservationUid}")]
     [HttpDelete]
-    public async Task<ActionResult<ReservationResponse>> UnbookHotel([FromHeader(Name = "X-User-Name")] string username, string reservationUid)
+    public async Task<ActionResult<ReservationResponse>> UnbookHotel(string reservationUid)
     {
         var reservationService = httpClientFactory.CreateClient("ReservationService");
         var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/reservations/{reservationUid}");
-        request.Headers.Add("X-User-Name", username);
         var reservationServiceResponse = await reservationService.SendAsync(request);
         if (!reservationServiceResponse.IsSuccessStatusCode)
         {
@@ -367,7 +363,6 @@ public class GatewayController(IHttpClientFactory httpClientFactory, IMapper map
 
         var loyaltyClient = httpClientFactory.CreateClient("LoyaltyService");
         request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/loyalties/degrade");
-        request.Headers.Add("X-User-Name", username);
         var loyaltyResponse = await loyaltyClient.SendAsync(request);
 
         return NoContent();

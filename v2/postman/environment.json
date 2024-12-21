@@ -4,7 +4,7 @@
   "values": [
     {
       "key": "serviceUrl",
-      "value": "http://51.250.32.102",
+      "value": "http://localhost:8080",
       "enabled": true
     },
     {
@@ -30,6 +30,11 @@
     {
       "key": "client_secret",
       "value": "JDgvvoMQxxC7IWdpkBP8a4MkQE1KxjNTZQ0o2_8avjbfj7zIcGRyMGBReydOCZx3",
+      "enabled": true
+    },
+    {
+      "key": "client_audience",
+      "value": "https://dips5.com/api",
       "enabled": true
     }
   ],

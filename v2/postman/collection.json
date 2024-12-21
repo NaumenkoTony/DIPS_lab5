@@ -67,6 +67,11 @@
 									"key": "client_secret",
 									"value": "{{client_secret}}",
 									"type": "text"
+								},
+								{
+									"key": "audience",
+									"value": "{{client_audience}}",
+									"type": "text"
 								}
 							]
 						},

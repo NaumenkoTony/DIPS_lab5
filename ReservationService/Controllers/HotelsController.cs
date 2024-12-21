@@ -8,10 +8,11 @@ using ReservationService.Models.Dto;
 namespace ReservationService.Controllers;
 
 [Authorize]
-public class HotelsController(IHotelRepository repository, IMapper mapper) : Controller
+public class HotelsController(IHotelRepository repository, IMapper mapper, ITokenService tokenService) : Controller
 {
     private readonly IHotelRepository repository = repository;
     private readonly IMapper mapper = mapper;
+    private readonly ITokenService tokenService = tokenService;
 
     [Route("api/v1/[controller]")]
     [HttpGet]

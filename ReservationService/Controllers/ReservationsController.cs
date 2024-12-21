@@ -8,17 +8,19 @@ using ReservationService.Models.Dto;
 namespace ReservationService.Controllers;
 
 [Authorize]
-public class ReservationsController(IReservationRepository repository, IHotelRepository hotelRepository, IMapper mapper, ILogger<ReservationsController> logger) : Controller
+public class ReservationsController(IReservationRepository repository, IHotelRepository hotelRepository, IMapper mapper, ILogger<ReservationsController> logger, ITokenService tokenService) : Controller
 {
     private readonly IReservationRepository repository = repository;
     private readonly IHotelRepository hotelRepository = hotelRepository;
     private readonly IMapper mapper = mapper;
     private readonly ILogger<ReservationsController> logger = logger;
+    private readonly ITokenService tokenService = tokenService;
 
     [Route("/api/v1/[controller]")]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ReservationResponse>>> GetByUsernameAsync([FromHeader(Name = "X-User-Name")] string username)
+    public async Task<ActionResult<IEnumerable<ReservationResponse>>> GetByUsernameAsync()
     {
+        string username = tokenService.GetUsernameFromJWT();
         return Ok(mapper.Map<IEnumerable<ReservationResponse>>(await repository.GetReservationsByUsernameAsync(username)));
     }
 
@@ -52,8 +54,9 @@ public class ReservationsController(IReservationRepository repository, IHotelRep
 
     [Route("/api/v1/[controller]/{uid}")]
     [HttpGet]
-    public async Task<ActionResult<ReservationResponse>> GetReservationAsync([FromHeader(Name = "X-User-Name")] string username, string uid)
+    public async Task<ActionResult<ReservationResponse>> GetReservationAsync(string uid)
     {   
+        string username = tokenService.GetUsernameFromJWT();
         return Ok(mapper.Map<ReservationResponse>(await repository.GetByUsernameUidAsync(username, uid)));
     }
 }

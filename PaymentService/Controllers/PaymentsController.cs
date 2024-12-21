@@ -8,10 +8,11 @@ using PaymentService.Models.DomainModels;
 using PaymentService.Models.Dto;
 
 [Authorize]
-public class PaymentsController(IPaymentRepository repository, IMapper mapper) : Controller
+public class PaymentsController(IPaymentRepository repository, IMapper mapper, ITokenService tokenService) : Controller
 {
     private readonly IPaymentRepository repository = repository;
     private readonly IMapper mapper = mapper;
+    private readonly ITokenService tokenService = tokenService;
 
     [Route("api/v1/[controller]/{uid}")]
     [HttpGet]
