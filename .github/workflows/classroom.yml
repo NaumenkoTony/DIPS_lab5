@@ -75,10 +75,12 @@ jobs:
           kubectl get pods -n ingress-nginx
           kubectl get svc -n ingress-nginx
 
-      - name: Wait for Ingress IP
+      - name: Get Ingress IP
         id: ingress-ip
         run: |
-          INGRESS_IP=$(kubectl get svc -n ingress-nginx)
+          minikube tunnel & 
+          sleep 10s
+          INGRESS_IP=$(minikube ip)
           echo "Ingress IP: $INGRESS_IP"
           echo "ingress_ip=$INGRESS_IP" >> $GITHUB_ENV
       
