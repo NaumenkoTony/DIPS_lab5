@@ -28,7 +28,7 @@ jobs:
           docker compose push
   
   test:
-    name: Deploy to Minikube
+    name: Deploy to Minikube and test
     needs: build
     runs-on: ubuntu-latest
     steps:
