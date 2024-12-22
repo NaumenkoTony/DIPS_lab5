@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using GatewayService.ITokenService;
 
 public interface IAuthorizationService
 {
