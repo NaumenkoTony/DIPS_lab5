@@ -115,7 +115,9 @@ jobs:
 
     - name: Wait 10s
       id: delay
-      run: sleep 10s  
+      run: | 
+        sleep 10s
+        cat v2/postman/environment.json
 
     - name: Run API Tests
       uses: matt-ball/newman-action@master
