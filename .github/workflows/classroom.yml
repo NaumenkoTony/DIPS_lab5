@@ -112,6 +112,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         name: environment-file
+        path: v2/postman/
 
     - name: Wait 10s
       id: delay
