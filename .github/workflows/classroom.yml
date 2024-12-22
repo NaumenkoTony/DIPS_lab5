@@ -44,7 +44,7 @@ jobs:
   
   test:
     name: Deploy to Minikube and test
-    needs: build
+    needs: unit-test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
