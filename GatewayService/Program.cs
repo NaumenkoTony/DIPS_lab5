@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
@@ -19,16 +18,19 @@ builder.Services.AddScoped<AuthorizationHandler>();
 builder.Services.AddHttpClient("LoyaltyService", client =>
 {
     client.BaseAddress = new Uri("http://loyalty-service.default.svc.cluster.local:8050");
+    // client.BaseAddress = new Uri("http://loyalty_service:8050");
 }).AddHttpMessageHandler<AuthorizationHandler>(); ;
 
 builder.Services.AddHttpClient("PaymentService", client =>
 {
     client.BaseAddress = new Uri("http://payment-service.default.svc.cluster.local:8060");
+    // client.BaseAddress = new Uri("http://payment_service:8060");
 }).AddHttpMessageHandler<AuthorizationHandler>(); ;
 
 builder.Services.AddHttpClient("ReservationService", client =>
 {
     client.BaseAddress = new Uri("http://reservation-service.default.svc.cluster.local:8070");
+    // client.BaseAddress = new Uri("http://reservation_service:8070");
 }).AddHttpMessageHandler<AuthorizationHandler>(); ;
 
 builder.Services.AddAutoMapper(typeof(Program));
