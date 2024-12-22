@@ -1,3 +1,5 @@
+namespace PaymentService.ITokenService;
+
 using System.IdentityModel.Tokens.Jwt;
 using Serilog;
 

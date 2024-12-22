@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using ReservationService.Data;
 using ReservationService.Models.DomainModels;
 using ReservationService.Models.Dto;
+using ReservationService.TokenService;
 
 namespace ReservationService.Controllers;
 

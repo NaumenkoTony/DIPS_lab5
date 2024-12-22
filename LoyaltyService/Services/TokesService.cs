@@ -1,3 +1,5 @@
+namespace LoyaltyService.ITokenService;
+
 using System.IdentityModel.Tokens.Jwt;
 using Serilog;
 

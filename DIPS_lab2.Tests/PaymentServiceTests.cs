@@ -7,12 +7,14 @@ using PaymentService.Models.DomainModels;
 using PaymentService.Models.Dto;
 using Xunit;
 using System.Threading.Tasks;
+using PaymentService.ITokenService;
 
 public class PaymentsControllerTests
 {
     private readonly Mock<IPaymentRepository> mockRepository;
     private readonly IMapper mapper;
     private readonly PaymentsController controller;
+    private readonly Mock<ITokenService> tokenService;
 
     public PaymentsControllerTests()
     {
@@ -22,9 +24,10 @@ public class PaymentsControllerTests
             cfg.CreateMap<Payment, PaymentResponse>().ReverseMap();
         });
         mapper = config.CreateMapper();
+        tokenService = new Mock<ITokenService>();
 
         mockRepository = new Mock<IPaymentRepository>();
-        controller = new PaymentsController(mockRepository.Object, mapper);
+        controller = new PaymentsController(mockRepository.Object, mapper, tokenService.Object);
     }
 
     [Fact]

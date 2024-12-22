@@ -5,6 +5,7 @@ using LoyaltyService.Data;
 using LoyaltyService.Models.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using LoyaltyService.ITokenService;
 
 [Authorize]
 public class LoyaltiesController(ILoyalityRepository repository, IMapper mapper, ITokenService tokenService) : Controller

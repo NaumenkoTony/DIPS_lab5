@@ -1,3 +1,5 @@
+namespace GatewayService.ITokenService;
+
 using System.IdentityModel.Tokens.Jwt;
 using Serilog;
 

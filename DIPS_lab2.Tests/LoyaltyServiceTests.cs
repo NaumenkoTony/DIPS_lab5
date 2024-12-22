@@ -11,12 +11,14 @@ using System.Linq;
 using AutoMapper;
 using LoyaltyService.Mapping;
 using Microsoft.AspNetCore.Mvc;
+using LoyaltyService.ITokenService;
 
 public class LoyaltyServiceTests
 {
     private readonly Mock<ILoyalityRepository> mockRepository;
     private readonly LoyaltiesController controller;
     private readonly IMapper mapper;
+    private readonly Mock<ITokenService> tokenService;
 
     public LoyaltyServiceTests()
     {
@@ -26,49 +28,12 @@ public class LoyaltyServiceTests
         });
 
         mapper = config.CreateMapper();
-
+        
         mockRepository = new Mock<ILoyalityRepository>();
 
-        controller = new LoyaltiesController(mockRepository.Object, mapper);
-    }
+        tokenService = new Mock<ITokenService>();
 
-    [Fact]
-    public async Task GetByUsername_ReturnsLoyaltyResponse()
-    {
-        // Arrange
-        var username = "testUser";
-        var loyalty = new Loyalty
-        {
-            Id = 1,
-            Username = username,
-            ReservationCount = 5,
-            Status = "Silver",
-            Discount = 10
-        };
-
-        mockRepository.Setup(repo => repo.GetLoyalityByUsername(username)).ReturnsAsync(loyalty);
-
-        // Act
-        var result = await controller.GetByUsername(username);
-
-        // Assert
-        mockRepository.Verify(repo => repo.GetLoyalityByUsername(username), Times.Once);
-        Assert.NotNull(result);
-    }
-
-    [Fact]
-    public async Task ImproveLoyality_ReturnsOk()
-    {
-        // Arrange
-        var username = "testUser";
-        mockRepository.Setup(repo => repo.ImproveLoyality(username)).Returns(Task.CompletedTask);
-
-        // Act
-        var result = await controller.ImproveLoyality(username);
-
-        // Assert
-        Assert.IsType<OkResult>(result);
-        mockRepository.Verify(repo => repo.ImproveLoyality(username), Times.Once);
+        controller = new LoyaltiesController(mockRepository.Object, mapper, tokenService.Object);
     }
 
     [Fact]

@@ -5,6 +5,7 @@ using ReservationService.Controllers;
 using ReservationService.Data;
 using ReservationService.Models.DomainModels;
 using ReservationService.Models.Dto;
+using ReservationService.TokenService;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ public class ReservationServiceTests
     private readonly Mock<IHotelRepository> mockRepository;
     private readonly IMapper mapper;
     private readonly HotelsController controller;
+    private readonly Mock<ITokenService> tokenService;
 
     public ReservationServiceTests()
     {
@@ -23,9 +25,10 @@ public class ReservationServiceTests
             cfg.CreateMap<Hotel, HotelResponse>();
         });
         mapper = config.CreateMapper();
+        tokenService = new Mock<ITokenService>();
 
         mockRepository = new Mock<IHotelRepository>();
-        controller = new HotelsController(mockRepository.Object, mapper);
+        controller = new HotelsController(mockRepository.Object, mapper, tokenService.Object);
     }
 
     [Fact]

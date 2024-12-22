@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReservationService.Data;
 using ReservationService.Data.RepositoriesPostgreSQL;
+using ReservationService.TokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;

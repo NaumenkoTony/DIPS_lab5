@@ -1,3 +1,5 @@
+namespace ReservationService.TokenService;
+
 using System.IdentityModel.Tokens.Jwt;
 using Serilog;
 

@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using PaymentService.Data;
+using PaymentService.ITokenService;
 using ReservationService.Data.RepositoriesPostgreSQL;
 using Serilog;
 

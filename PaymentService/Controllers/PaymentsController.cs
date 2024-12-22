@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using PaymentService.Data;
 using PaymentService.Models.DomainModels;
 using PaymentService.Models.Dto;
+using PaymentService.ITokenService;
 
 [Authorize]
 public class PaymentsController(IPaymentRepository repository, IMapper mapper, ITokenService tokenService) : Controller

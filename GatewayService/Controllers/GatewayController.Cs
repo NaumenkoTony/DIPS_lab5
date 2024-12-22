@@ -12,6 +12,7 @@ using GatewayService.Models.LoyaltyServiceDto;
 using GatewayService.Models.PaymentServiceDto;
 using Microsoft.AspNetCore.Authorization;
 using System.Net.Http.Headers;
+using GatewayService.ITokenService;
 
 [Authorize]
 public class GatewayController(IHttpClientFactory httpClientFactory, IMapper mapper, ILogger<GatewayController> logger, 
