@@ -51,6 +51,10 @@ jobs:
           minikube addons enable ingress
           kubectl get pods -n ingress-nginx
 
+      - name: Wait 30s
+        id: delay
+        run: sleep 30s  
+
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f k8s/
