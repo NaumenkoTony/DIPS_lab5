@@ -88,7 +88,7 @@ jobs:
         run: |
           INGRESS_IP=$(minikube ip)
           echo "Ingress IP: $INGRESS_IP"
-          jq '.values |= map(if .key == "serviceUrl" then .value = "http://'"$INGRESS_IP"'" else . end)' \
+          jq '.values |= map(if .key == "serviceUrl" then .value = "https://'"$INGRESS_IP"'" else . end)' \
           v2/postman/environment.json > updated_environment.json
           mv updated_environment.json v2/postman/environment.json
           cat v2/postman/environment.json
