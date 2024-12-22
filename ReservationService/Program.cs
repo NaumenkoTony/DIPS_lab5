@@ -24,8 +24,8 @@ builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 
 builder.Services.AddAutoMapper(typeof(Program));
 
-var domain = $"https://dev-qsbo6smqgu2rkhti.us.auth0.com/";
-var apiIdentifier = "https://dips5.com/api";
+var domain = $"https://{builder.Configuration["Auth:Domain"]}/";
+var apiIdentifier = builder.Configuration["Auth:Api"];
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

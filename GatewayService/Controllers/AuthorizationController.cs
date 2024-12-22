@@ -14,14 +14,11 @@ using Microsoft.AspNetCore.Authorization;
 
 [Route("/api/v1/authorize")]
 [ApiController]
-public class AuthorizationController : ControllerBase
+public class AuthorizationController(ILogger<AuthorizationController> logger, IConfiguration config) : ControllerBase
 {
-    private readonly ILogger<AuthorizationController> _logger;
+    private readonly ILogger<AuthorizationController> logger = logger;
+    private readonly IConfiguration config = config;
 
-    public AuthorizationController(ILogger<AuthorizationController> logger)
-    {
-        _logger = logger;
-    }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -29,10 +26,10 @@ public class AuthorizationController : ControllerBase
         if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
             return BadRequest("Username and password are required.");
 
-        var domain = "https://dev-qsbo6smqgu2rkhti.us.auth0.com/";
-        var apiIdentifier = "https://dips5.com/api";
-        var clientId = "GGwBXsoEGqhRAEYOc97qW6lU5yu2ojwN";
-        var clientSecret = "JDgvvoMQxxC7IWdpkBP8a4MkQE1KxjNTZQ0o2_8avjbfj7zIcGRyMGBReydOCZx3";
+        var domain = $"https://{config["Auth:Domain"]}/";
+        var apiIdentifier = config["Auth:Api"];
+        var clientId = config["Auth:ClientId"];
+        var clientSecret = config["Auth:ClientSecret"];
 
         var client = new HttpClient();
         var response = await client.PostAsync($"{domain}oauth/token",
@@ -49,7 +46,7 @@ public class AuthorizationController : ControllerBase
 
         if (!response.IsSuccessStatusCode)
         {
-            _logger.LogWarning("Login failed for user {Username}. Response: {StatusCode} - {ReasonPhrase}",
+            logger.LogWarning("Login failed for user {Username}. Response: {StatusCode} - {ReasonPhrase}",
                 request.Username, response.StatusCode, response.ReasonPhrase);
             return Unauthorized("Invalid username or password.");
         }
@@ -62,7 +59,7 @@ public class AuthorizationController : ControllerBase
     [HttpPost("callback")]
     public IActionResult Callback()
     {
-        _logger.LogInformation("Callback received.");
+        logger.LogInformation("Callback received.");
         return Ok("Callback received.");
     }
 }

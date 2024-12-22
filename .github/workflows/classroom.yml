@@ -92,6 +92,12 @@ jobs:
           v2/postman/environment.json > updated_environment.json
           mv updated_environment.json v2/postman/environment.json
           cat v2/postman/environment.json
+      
+      - name: Save updated environment file
+        uses: actions/upload-artifact@v3
+        with:
+          name: environment-file
+          path: v2/postman/environment.json
 
   test:
     name: Test
@@ -101,6 +107,11 @@ jobs:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
+    
+    - name: Download updated environment file
+      uses: actions/download-artifact@v3
+      with:
+        name: environment-file
 
     - name: Wait 10s
       id: delay
