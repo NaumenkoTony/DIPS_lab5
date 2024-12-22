@@ -27,7 +27,7 @@ jobs:
         run: |
           docker compose push
   
-  deploy:
+  test:
     name: Deploy to Minikube
     needs: build
     runs-on: ubuntu-latest
@@ -52,7 +52,6 @@ jobs:
           kubectl get pods -n ingress-nginx
 
       - name: Wait 30s
-        id: delay
         run: | 
           sleep 30s  
           kubectl get pods -n ingress-nginx
@@ -76,7 +75,6 @@ jobs:
           kubectl get svc -n ingress-nginx
 
       - name: Get Ingress IP
-        id: ingress-ip
         run: |
           minikube tunnel & 
           sleep 10s
@@ -92,42 +90,18 @@ jobs:
           v2/postman/environment.json > updated_environment.json
           mv updated_environment.json v2/postman/environment.json
           cat v2/postman/environment.json
-      
-      - name: Save updated environment file
-        uses: actions/upload-artifact@v3
+
+      - name: Wait 10s
+        run: sleep 10s
+
+      - name: Run API Tests
+        uses: matt-ball/newman-action@master
         with:
-          name: environment-file
-          path: v2/postman/environment.json
+          collection: v2/postman/collection.json
+          environment: v2/postman/environment.json
+          delayRequest: 100
+          reporters: '[ "cli" ]'
 
-  test:
-    name: Test
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    
-    - name: Download updated environment file
-      uses: actions/download-artifact@v3
-      with:
-        name: environment-file
-        path: v2/postman/
-
-    - name: Wait 10s
-      id: delay
-      run: | 
-        sleep 10s
-        cat v2/postman/environment.json
-
-    - name: Run API Tests
-      uses: matt-ball/newman-action@master
-      with:
-        collection: v2/postman/collection.json
-        environment: v2/postman/environment.json
-        delayRequest: 100
-        reporters: '[ "cli" ]'
-
-    - uses: education/autograding@v1
-      id: autograder
-      continue-on-error: true
+      - uses: education/autograding@v1
+        id: autograder
+        continue-on-error: true
