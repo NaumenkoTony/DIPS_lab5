@@ -29,6 +29,7 @@ jobs:
   
   deploy:
     name: Deploy to Minikube
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -83,7 +84,6 @@ jobs:
           v2/postman/environment.json > updated_environment.json
           mv updated_environment.json v2/postman/environment.json
 
-          
   test:
     name: Test
     needs: deploy
