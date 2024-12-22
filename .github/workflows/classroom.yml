@@ -29,25 +29,26 @@ jobs:
   
   deploy:
     name: Deploy to Minikube
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Minikube
-        uses: azure/setup-kubectl@v1
-        with:
-          version: 'latest'
-
-      - name: Install Minikube and start cluster
+      - name: Install Minikube
         run: |
           curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
           chmod +x minikube
           sudo mv minikube /usr/local/bin/
-          minikube start --driver=docker
+          minikube version
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker --cpus=4 --memory=8192 --disk-size=10g
+
+      - name: Enable Ingress
+        run: |
           minikube addons enable ingress
-          kubectl wait --namespace kube-system --for=condition=ready pod -l app.kubernetes.io/name=ingress-nginx --timeout=90s
+          kubectl get pods -n ingress-nginx
 
       - name: Apply Kubernetes manifests
         run: |
